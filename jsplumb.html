@@ -1,0 +1,201 @@
+<style>
+    #diagramContainer {
+        padding: 21px;
+        width: 100%;
+        height: 100%;
+        border: 1px solid gray;
+        background-image: url(http://freedevelopertutorials.azurewebsites.net/wp-content/uploads/2015/06/grid.png);
+        background-repeat: repeat;
+    }
+
+    .item {
+        position: absolute;
+        width: 200px;
+        border: 1px solid rgb(24, 24, 24);
+        float: left;
+        box-sizing: border-box;
+        border-radius: 5%;
+        text-align: center;
+    }
+
+    .start {
+        height: 80;
+        width: 150px;
+    }
+
+    .col-md-12,
+    .col-md-4,
+    .col-md-6 {
+        padding: 0px !important
+    }
+</style>
+<link rel="stylesheet" type="text/css" href="./style/bootstrap.css">
+<script src="./script/jsPlumb.js"></script>
+<script>        
+    const start = "start";
+    const endpointType = "Dot";
+    var noOfDots;
+    const options = {
+        connector: ['Flowchart', { stub: [5, 5], gap: 5, cornerRadius: 2, alwaysRespectStubs: true }]
+    };
+    var anchorAlign = {
+        anchorCenter: [0.5, 0.8, 0, 1],
+        anchorLeft: [0.2, 0.8, 0, 1],
+        anchorRight: [0.8, 0.8, 0, 1],
+        anchorTop: [0.5, 0, 0, 0]
+    }
+    var anchorPostionLeft = 0;
+    var itemType = "";
+    var TargetEndpoint = {
+        endpoint: endpointType,
+        isSource: false,
+        isTarget: true,
+        option: options
+    }
+    var SourceEndpoint = {
+        endpoint: endpointType,
+        isSource: true,
+        isTarget: false,
+        option: options
+    }
+    var SourceEndpoint2 = {
+        endpoint: endpointType,
+        isSource: true,
+        isTarget: false,
+        option: options
+    }
+
+    jsPlumb.ready(function () {
+
+
+        var count = 0;
+        jsPlumb.draggable("start", { grid: [10, 10] });
+
+
+        document.getElementById("selectPointType").onchange = function () {
+            itemType = document.getElementById("selectPointType").value;
+        }
+        document.getElementById("noOfDots").onchange = function () {
+            noOfDots = document.getElementById("noOfDots").value;
+        }
+        document.getElementsByTagName("button").onclick = function (e) {
+            console.log(e.id);
+            _addEndpoint(e.id, newEndPoint, e.id + "_source_endpoint")
+        }
+        document.getElementById("addWidget").onclick = function () {
+            // Bind to connection event
+            count += 1;
+            var div = document.createElement('div');
+            div.style.backgroundColor = "white";
+            div.className = "panel panel-default item";
+            div.id = 'block' + count;
+
+            if (itemType == "Result") {
+                div.innerHTML = "<div class='panel-body'><input class='form-control' type='text'/></div></div><div class='panel-footer'></div>";
+                document.getElementById('diagramContainer').appendChild(div);
+                _addEndpoint(div.id, TargetEndpoint, div.id + "_target_endpoint", anchorAlign.anchorTop);
+            } else {
+                switch (noOfDots) {
+                    case "1":
+                        //div.innerHTML = "<div class='panel-body'><input class='form-control' type='text'></div></div><div class='panel-footer'> <button class='btn btn-success btn-sm' onclick='addNewOption(" + div.id + ")'>Add</button></div>";
+                        div.innerHTML = "<div class='panel-body'>Title<input class='form-control' type='text'/>Actions<div class='col-md-12'><input class='form-control'/></div></div></div><div class='panel-footer'></div>";
+                        document.getElementById('diagramContainer').appendChild(div);
+                        _addEndpoint(div.id, TargetEndpoint, div.id + "_entry", anchorAlign.anchorTop);
+                        _addEndpoint(div.id, SourceEndpoint, div.id + "_source_endpoint", anchorAlign.anchorCenter);
+                        break;
+                    case "2":
+                        div.innerHTML = "<div class='panel-body'>Title<input class='form-control' type='text'/><label class='col-md-12'>Actions</label><div class='col-md-6'><input class='form-control'/></div><div class='col-md-6'><input class='form-control'/></div></div></div><div class='panel-footer'></div>";
+                        document.getElementById('diagramContainer').appendChild(div);
+                        _addEndpoint(div.id, TargetEndpoint, div.id + "_entry", anchorAlign.anchorTop);
+                        _addEndpoint(div.id, SourceEndpoint, div.id + "_source_endpoint", anchorAlign.anchorRight);
+                        _addEndpoint(div.id, SourceEndpoint, div.id + "_source_endpoint", anchorAlign.anchorLeft);
+                        break;
+                    case "3":
+                        div.innerHTML = "<div class='panel-body'>Title<input class='form-control' type='text'/><label class='col-md-12'>Actions</label><div class='col-md-4'><input class='form-control'/></div><div class='col-md-4'><input class='form-control'/></div><div class='col-md-4'><input class='form-control'/></div></div></div><div class='panel-footer'></div>";
+                        document.getElementById('diagramContainer').appendChild(div);
+                        _addEndpoint(div.id, TargetEndpoint, div.id + "_entry", anchorAlign.anchorTop);
+                        _addEndpoint(div.id, SourceEndpoint, start + "_source_endpoint", anchorAlign.anchorLeft);
+                        _addEndpoint(div.id, SourceEndpoint2, start + "_source_endpoint", anchorAlign.anchorRight);
+                        _addEndpoint(div.id, SourceEndpoint2, start + "_source_endpoint", anchorAlign.anchorCenter);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
+            console.log("added!");
+
+            jsPlumb.makeTarget(div.id, {
+                anchor: ['Continuous', { faces: ['top'] }],
+                isSource: false,
+                isTarget: true,
+                uuid: div.id + '_entry',
+            });
+
+
+            jsPlumb.draggable(div.id, { grid: [10, 10] });
+        }
+
+        _addEndpoint(start, SourceEndpoint, start + "_source_endpoint", anchorAlign.anchorLeft);
+        _addEndpoint(start, SourceEndpoint2, start + "_source_endpoint", anchorAlign.anchorRight);
+        //jsPlumb.addEndpoint("item_left", { endpoint:_squareEndpointTargetSingleOptions });
+    });
+    jsPlumb.bind('connection', (e) => {
+        // Newly created endpoint is attached to DOM and you can drag it
+        console.log(e.targetEndpoint.canvas);
+
+    });
+
+    function _addEndpoint(id, newEndPoint, Uuid, anchor) {
+        jsPlumb.addEndpoint(id, {
+            endpoint: newEndPoint.endpoint,
+            isSource: newEndPoint.isSource,
+            isTarget: newEndPoint.isTarget,
+            uuid: Uuid,
+            anchor: anchor,
+        }, newEndPoint.option);
+    }
+    function addNewOption(id) {
+        console.log(anchorPostionLeft);
+        jsPlumb.addEndpoint(id, {
+            endpoint: SourceEndpoint2.endpoint,
+            isSource: SourceEndpoint2.isSource,
+            isTarget: SourceEndpoint2.isTarget,
+            uuid: id + "_source_endpoint",
+            anchor: [anchorPostionLeft, 1, 0, 1],
+        }, SourceEndpoint2.option);
+        anchorPostionLeft += 1;
+    }
+</script>
+<div class="form-inline">
+    <div class="form-group">
+        <label>Item Type</label>
+        <select class="form-control" id="selectPointType">
+            <option value="">-Select Item-</option>
+            <option value="Condition">Condition</option>
+            <option value="Result">Result</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>No of Dots</label>
+        <select class="form-control" id="noOfDots">
+            <option value="">-Dots Count-</option>
+            <option value="1">One</option>
+            <option value="2">Two</option>
+            <option value="3">Three</option>
+        </select>
+    </div>
+    <button class="btn btn-success btn-sm" id="addWidget">Add</button>
+</div>
+<div id="diagramContainer" style "height:80px;width:200px;">
+
+    <div id="rubberband" style="border:1px solid green;display:none;"></div>
+    <div id="start" class="panel item start" style="background:green;top:100px;color:white">
+        <div class="panel-body row">
+            <div class="col-md-6">Message</div>
+            <div class="col-md-6">Call</div>
+        </div>
+    </div>
+
+</div>
